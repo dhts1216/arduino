@@ -7,8 +7,8 @@
 #define PIN_SERVO 10
 
 #define _DUTY_MIN 500  // servo full clock-wise position (0 degree)
-#define _DUTY_NEU 1500  // servo neutral position (90 degree)
-#define _DUTY_MAX 2500  // servo full counter-clockwise position (180 degree)
+#define _DUTY_NEU 1250  // servo neutral position (90 degree)
+#define _DUTY_MAX 2000  // servo full counter-clockwise position (180 degree)
 
 #define _DIST_MIN  100.0   // minimum distance 100mm
 #define _DIST_MAX  250.0   // maximum distance 250mm
@@ -47,21 +47,23 @@ void loop()
   a_value = analogRead(PIN_IR);
   dist_raw = ((6762.0 / (a_value - 9.0)) - 4.0) * 10.0;
 
+  
+  digitalWrite(PIN_LED, HIGH);
   if (dist_raw < _DIST_MIN) { // Put range Filter code here (_DIST_MIN ~ _DIST_MAX)
     dist_raw = _DIST_MIN;
   }
-  if (dist_raw > _DIST_MAX) {
+  else if (dist_raw > _DIST_MAX) {
     dist_raw = _DIST_MAX;
   }
   else {
-    digitalWrite(PIN_LED, HIGH);
+    digitalWrite(PIN_LED, LOW);
   }
   // and turn on LED if the distance is in the range 
 
   dist_ema = EMA_ALPHA * dist_raw + (1 - EMA_ALPHA) * dist_ema; // Put EMA filter code here
       
   //duty = map(dist_ema, _DIST_MIN, _DIST_MAX, _DUTY_MIN, _DUTY_MAX);
-  duty = 2000 * ((dist_ema - _DIST_MIN) / _DIST_MIN) + 500; // Put map() equivalent code here
+  duty = (_DUTY_MAX - _DUTY_MIN) * ((dist_ema - _DIST_MIN) / _DIST_MIN) + _DUTY_MIN; // Put map() equivalent code here
   
   myservo.writeMicroseconds(duty);
 
